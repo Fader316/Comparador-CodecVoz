@@ -5,47 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TelecomVox Pro | Laboratorio de Telecomunicaciones</title>
     
-    <!-- Librerías Externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 1. FONDO 3D (Fijo para que no se mueva con el scroll) -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- CONTENEDOR SCROLLABLE -->
     <div class="app-container">
         
-        <!-- HEADER -->
         <header class="app-header">
             <div>
                 <h1>TelecomVox <span class="highlight">PRO</span></h1>
                 <p class="subtitle">Laboratorio Interactivo de Codificación de Voz</p>
             </div>
-            <!-- Botón Ayuda para ver intro de nuevo -->
             <button class="help-btn" onclick="showIntro()">ℹ️</button>
         </header>
 
-        <!-- 2. SELECTOR DE CODEC -->
         <nav class="top-nav">
             <label class="codec-btn selected" id="btn-lpc" onclick="selectCodec('lpc')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" /></svg>
-                <span>LPC</span>
+                <div class="codec-text">LPC</div>
             </label>
             <label class="codec-btn" id="btn-relp" onclick="selectCodec('relp')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg>
-                <span>RELP</span>
+                <div class="codec-text">RELP</div>
             </label>
             <label class="codec-btn" id="btn-celp" onclick="selectCodec('celp')">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17,1.01L7,1C5.9,1 5,1.9 5,3V21C5,22.1 5.9,23 7,23H17C18.1,23 19,22.1 19,21V3C19,1.9 18.1,1.01 17,1.01M17,19H7V5H17V19M16,13H8V15H16V13Z" /></svg>
-                <span>CELP</span>
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17,1.01L7,1C5.9,1 5,1.9,5,3V21C5,22.1 5.9,23 7,23H17C18.1,23 19,22.1 19,21V3C19,1.9 18.1,1.01 17,1.01M17,19H7V5H17V19M16,13H8V15H16V13Z" /></svg>
+                <div class="codec-text">CELP</div>
             </label>
         </nav>
 
-        <!-- 3. MÉTRICAS -->
         <div class="metrics-bar">
             <div class="metric-mini">
                 <div class="metric-val" id="m-bitrate">2.4</div>
@@ -61,13 +53,50 @@
             </div>
         </div>
 
-        <!-- 4. OSCILOSCOPIO -->
+        <!-- NUEVA BARRA DE CONTROL UNIFICADA (Visible y Clara) -->
+        <div class="main-control-bar">
+            
+            <!-- SECCIÓN DE GRABACIÓN -->
+            <div class="control-group">
+                <button id="btnRecord" class="btn-action btn-record" onclick="toggleRecording()">
+                    <span class="btn-icon">🎤</span>
+                    <span class="btn-text">GRABAR (5s)</span>
+                </button>
+                <button id="btnReset" class="btn-action btn-reset" onclick="resetRecording()" disabled>
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">RESET</span>
+                </button>
+                <button id="btnPlay" class="btn-action btn-play" onclick="playRecordedAudio()" disabled>
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">REPRODUCIR</span>
+                </button>
+                <div class="timer-display" id="timerDisplay">0.0s</div>
+            </div>
+
+            <!-- SECCIÓN AUXILIAR (Más Visible) -->
+            <div class="control-group aux-bar">
+                <button class="btn-action btn-tool" onclick="openModal('modal-theory')">
+                    <span class="btn-icon">📚</span>
+                    <span class="btn-text">TEORÍA</span>
+                </button>
+                <button class="btn-action btn-tool" onclick="openModal('modal-compare')">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-text">COMPARAR</span>
+                </button>
+                <button class="btn-action btn-tool" onclick="startGame()">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-text">DESAFÍO</span>
+                </button>
+            </div>
+        </div>
+
         <main class="main-stage">
             <div class="canvas-box">
+                <!-- El canvas está limpio -->
                 <canvas id="oscCanvas"></canvas>
                 <div class="status-badge" id="statusText">LPC_READY</div>
             </div>
-            <!-- Botón Play flotante en el canvas -->
+            
             <div class="fab-container">
                 <button id="mainToggleBtn" class="main-action-btn btn-start" onclick="toggleSim()">
                     ▶ INICIAR LABORATORIO
@@ -75,36 +104,37 @@
             </div>
         </main>
 
-        <!-- 5. CONTROLES AUXILIARES -->
-        <div class="aux-controls">
-            <div class="aux-btn" onclick="openModal('modal-theory')">📘</div>
-            <div class="aux-btn" onclick="openModal('modal-compare')">📊</div>
-            <div class="aux-btn" onclick="startGame()">🎮</div>
+        <div class="instructions-box">
+            <h3>📋 Instrucciones de Uso</h3>
+            <ol>
+                <li><strong>1. Iniciar:</strong> Presiona el botón verde "INICIAR LABORATORIO".</li>
+                <li><strong>2. Grabar:</strong> Presiona "GRABAR" y habla una frase (máx 5s).</li>
+                <strong>3. Comparar:</strong> Selecciona LPC, RELP o CELP arriba y presiona "REPRODUCIR". ¡Escucha la diferencia!</li>
+                <li><strong>4. Reiniciar:</strong> Usa "RESET" para borrar el audio y empezar de nuevo.</li>
+            </ol>
         </div>
 
-        <!-- 6. FOOTER (Pie de Página Solicitado) -->
         <footer>
             Universidad de Oriente, ISPJAM<br>
             Facultad de Telecomunicaciones y Electrónica<br>
             <span class="authors">Misalis Gonzalez y Fabian Arias</span>
         </footer>
+    </div>
 
-    </div> <!-- Fin App Container -->
-
-    <!-- ================= MODALES ================= -->
-
-    <!-- MODAL INTRODUCCIÓN (Aparece al inicio) -->
+    <!-- MODAL INTRO -->
     <div id="intro-modal" class="modal-overlay">
         <div class="modal-content intro-box">
             <h2>👋 Bienvenido a TelecomVox PRO</h2>
             <div class="intro-text">
-                <p>Esta aplicación es un simulador en tiempo real de <strong>codificación de voz</strong>.</p>
-                <p>Aquí podrás experimentar cómo diferentes algoritmos técnicos (LPC, RELP, CELP) comprimen y alteran tu voz real para transmitirla a través de redes de comunicación.</p>
+                <p>Aplicación de simulación de codificación de voz en tiempo real.</p>
+                <p>Utiliza el panel de control superior para grabar y reproducir tu voz bajo diferentes técnicas de compresión.</p>
                 <ul>
-                    <li>🎤 Usa tu micrófono para generar audio real.</li>
-                    <li>🔊 Escucha cómo cada codec cambia el sonido (Robótico, Telefónico, etc.).</li>
-                    <li>📊 Compara métricas como el ancho de banda y la calidad.</li>
-                    <li>🎮 Pon a prueba tus conocimientos con el quiz interactivo.</li>
+                    <li>🎤 Graba una frase de prueba.</li>
+                    <li>🔊 Escucha cómo cambia el sonido con cada codec.</li>
+                    <li>📊 Observa la forma de onda resultante.</li>
+                <li>🎮 Pon a prueba tus conocimientos con el quiz.</li>
+                <li>📚 Consulta la teoría para entender los conceptos.</li>
+                <li>📊 Compara las especificaciones técnicas.</li>
                 </ul>
             </div>
             <button class="main-action-btn btn-start" style="width: 100%; margin-top: 1rem;" onclick="closeIntro()">
@@ -113,7 +143,7 @@
         </div>
     </div>
 
-    <!-- MODAL TEORÍA (Con explicaciones ampliadas) -->
+    <!-- MODAL TEORÍA -->
     <div id="modal-theory" class="modal-overlay">
         <div class="modal-content theory-box">
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
@@ -128,35 +158,26 @@
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
             <h2 style="text-align:center;">Comparativa Técnica</h2>
             <table class="comparison-table">
-                <thead>
-                    <tr><th>Aspecto</th><th style="color:var(--color-lpc)">LPC</th><th style="color:var(--color-relp)">RELP</th><th style="color:var(--color-celp)">CELP</th></tr>
-                </thead>
+                <thead><tr><th>Aspecto</th><th style="color:var(--color-lpc)">LPC</th><th style="color:var(--color-relp)">RELP</th><th style="color:var(--color-celp)">CELP</th></tr></thead>
                 <tbody>
-                    <tr><td><strong>Principio</strong></td><td>Modelo Source-Filter</td><td>Residuo Parcial</td><td>Codebooks</td></tr>
-                    <tr><td><strong>Calidad (MOS)</strong></td><td>Baja (~2.0)</td><td>Media (~3.5)</td><td>Alta (~4.2)</td></tr>
-                    <tr><td><strong>Tasa de Bits</strong></td><td>2.4 kbps</td><td>9.6 kbps</td><td>12.2 kbps</td></tr>
-                    <tr><td><strong>Complejidad</strong></td><td>Baja</td><td>Media</td><td>Alta</td></tr>
-                    <tr><td><strong>Uso Actual</strong></td><td>Satélite Antiguo</td><td>Radio Digital</td><td>VoIP / 4G/5G</td></tr>
+                    <tr><td>Principio</td><td>Modelo Source-Filter</td><td>Residuo Parcial</td><td>Codebooks</td></tr>
+                    <tr><td>Calidad</td><td>Baja</td><td>Media</td><td>Alta</td></tr>
+                    <tr><td>Bits</td><td>2.4 kbps</td><td>9.6 kbps</td><td>12.2 kbps</td></tr>
+                    <tr><td>Complejidad</td><td>Baja</td><td>Media</td><td>Alta</td></tr>
+                    <tr><td>Uso</td><td>Satélite</td><td>Radio</td><td>VoIP / 4G</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL JUEGO (Trivia Mejorada) -->
+    <!-- MODAL JUEGO -->
     <div id="modal-game" class="modal-overlay">
         <div class="modal-content game-area">
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
             <h2>🎮 Trivia de Telecomunicaciones</h2>
             <div class="game-score">Puntuación: <span id="scoreVal">0</span> / 50</div>
-            
-            <div class="game-scenario" id="gameQuestion">
-                Cargando pregunta...
-            </div>
-            
-            <div class="game-options" id="gameOptions">
-                <!-- Las opciones se generan con JS -->
-            </div>
-
+            <div class="game-scenario" id="gameQuestion"></div>
+            <div class="game-options" id="gameOptions"></div>
             <div class="game-feedback" id="gameFeedback"></div>
         </div>
     </div>
