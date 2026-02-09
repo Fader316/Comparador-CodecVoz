@@ -1,42 +1,52 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- VITAL: Esto fuerza al móvil a mostrarse a tamaño real y no permitir zoom accidental -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Comparador de Técnicas de Codificador de Voz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TelecomVox Pro | Laboratorio de Telecomunicaciones</title>
     
-    <!-- Enlace al CSS -->
+    <!-- Librerías Externas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- VISTA DASHBOARD -->
-    <div class="view-container">
+    <!-- 1. FONDO 3D (Fijo para que no se mueva con el scroll) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- CONTENEDOR SCROLLABLE -->
+    <div class="app-container">
         
-        <!-- TÍTULO PRINCIPAL -->
+        <!-- HEADER -->
         <header class="app-header">
-            <h1>Comparador de Técnicas de Codificador de Voz</h1>
+            <div>
+                <h1>TelecomVox <span class="highlight">PRO</span></h1>
+                <p class="subtitle">Laboratorio Interactivo de Codificación de Voz</p>
+            </div>
+            <!-- Botón Ayuda para ver intro de nuevo -->
+            <button class="help-btn" onclick="showIntro()">ℹ️</button>
         </header>
 
-        <!-- 1. SELECTOR DE CODEC -->
+        <!-- 2. SELECTOR DE CODEC -->
         <nav class="top-nav">
-            <label class="codec-btn selected" id="btn-lpc" style="--active-color: #0d9488;" onclick="selectCodec('lpc')">
+            <label class="codec-btn selected" id="btn-lpc" onclick="selectCodec('lpc')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" /></svg>
-                <span class="codec-name">LPC</span>
+                <span>LPC</span>
             </label>
-            <label class="codec-btn" id="btn-relp" style="--active-color: #d97706;" onclick="selectCodec('relp')">
+            <label class="codec-btn" id="btn-relp" onclick="selectCodec('relp')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg>
-                <span class="codec-name">RELP</span>
+                <span>RELP</span>
             </label>
-            <label class="codec-btn" id="btn-celp" style="--active-color: #059669;" onclick="selectCodec('celp')">
+            <label class="codec-btn" id="btn-celp" onclick="selectCodec('celp')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17,1.01L7,1C5.9,1 5,1.9 5,3V21C5,22.1 5.9,23 7,23H17C18.1,23 19,22.1 19,21V3C19,1.9 18.1,1.01 17,1.01M17,19H7V5H17V19M16,13H8V15H16V13Z" /></svg>
-                <span class="codec-name">CELP</span>
+                <span>CELP</span>
             </label>
         </nav>
 
-        <!-- 2. MÉTRICAS -->
-        <div class="metrics-bar" id="mainMetrics">
+        <!-- 3. MÉTRICAS -->
+        <div class="metrics-bar">
             <div class="metric-mini">
                 <div class="metric-val" id="m-bitrate">2.4</div>
                 <div class="metric-lbl">Kbps</div>
@@ -49,50 +59,66 @@
                 <div class="metric-val" id="m-delay">35</div>
                 <div class="metric-lbl">Delay</div>
             </div>
-            <div class="metric-mini">
-                <div class="metric-val" id="m-cpu">Baja</div>
-                <div class="metric-lbl">CPU</div>
-            </div>
         </div>
 
-        <!-- 3. OSCILOSCOPIO -->
+        <!-- 4. OSCILOSCOPIO -->
         <main class="main-stage">
             <div class="canvas-box">
                 <canvas id="oscCanvas"></canvas>
                 <div class="status-badge" id="statusText">LPC_READY</div>
             </div>
+            <!-- Botón Play flotante en el canvas -->
+            <div class="fab-container">
+                <button id="mainToggleBtn" class="main-action-btn btn-start" onclick="toggleSim()">
+                    ▶ INICIAR LABORATORIO
+                </button>
+            </div>
         </main>
 
-        <!-- 4. BOTÓN FLOTANTE -->
-        <div class="fab-container">
-            <button id="mainToggleBtn" class="main-action-btn btn-start" onclick="toggleSim()">
-                ▶ INICIAR
-            </button>
+        <!-- 5. CONTROLES AUXILIARES -->
+        <div class="aux-controls">
+            <div class="aux-btn" onclick="openModal('modal-theory')">📘</div>
+            <div class="aux-btn" onclick="openModal('modal-compare')">📊</div>
+            <div class="aux-btn" onclick="startGame()">🎮</div>
         </div>
 
-        <!-- 5. BOTONES AUXILIARES -->
-        <div class="aux-controls">
-            <div class="aux-btn" onclick="openModal('modal-theory')">
-                📘 <span class="tooltip">Ver Teoría</span>
+        <!-- 6. FOOTER (Pie de Página Solicitado) -->
+        <footer>
+            Universidad de Oriente, ISPJAM<br>
+            Facultad de Telecomunicaciones y Electrónica<br>
+            <span class="authors">Misalis Gonzalez y Fabian Arias</span>
+        </footer>
+
+    </div> <!-- Fin App Container -->
+
+    <!-- ================= MODALES ================= -->
+
+    <!-- MODAL INTRODUCCIÓN (Aparece al inicio) -->
+    <div id="intro-modal" class="modal-overlay">
+        <div class="modal-content intro-box">
+            <h2>👋 Bienvenido a TelecomVox PRO</h2>
+            <div class="intro-text">
+                <p>Esta aplicación es un simulador en tiempo real de <strong>codificación de voz</strong>.</p>
+                <p>Aquí podrás experimentar cómo diferentes algoritmos técnicos (LPC, RELP, CELP) comprimen y alteran tu voz real para transmitirla a través de redes de comunicación.</p>
+                <ul>
+                    <li>🎤 Usa tu micrófono para generar audio real.</li>
+                    <li>🔊 Escucha cómo cada codec cambia el sonido (Robótico, Telefónico, etc.).</li>
+                    <li>📊 Compara métricas como el ancho de banda y la calidad.</li>
+                    <li>🎮 Pon a prueba tus conocimientos con el quiz interactivo.</li>
+                </ul>
             </div>
-            <div class="aux-btn" onclick="openModal('modal-compare')">
-                📊 <span class="tooltip">Comparar Tabla</span>
-            </div>
-            <div class="aux-btn" onclick="startGame()">
-                🎮 <span class="tooltip">Desafío Rápido</span>
-            </div>
+            <button class="main-action-btn btn-start" style="width: 100%; margin-top: 1rem;" onclick="closeIntro()">
+                ¡ENTENDIDO! COMENZAR
+            </button>
         </div>
     </div>
 
-    <!-- MODAL TEORÍA -->
+    <!-- MODAL TEORÍA (Con explicaciones ampliadas) -->
     <div id="modal-theory" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content theory-box">
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
-            <h2 id="theoryTitle" style="color:var(--active-color); margin-bottom:1rem;">Teoría</h2>
-            <div id="theoryText" style="line-height:1.6; color:#cbd5e1;"></div>
-            <div style="margin-top:1rem;">
-                <span id="theoryTag" style="background:var(--active-color); color:#000; padding:4px 12px; border-radius:12px; font-weight:bold;"></span>
-            </div>
+            <h2 id="theoryTitle" style="color:var(--active-color);"></h2>
+            <div id="theoryText" class="rich-text"></div>
         </div>
     </div>
 
@@ -100,89 +126,41 @@
     <div id="modal-compare" class="modal-overlay">
         <div class="modal-content">
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
-            <h2 style="text-align:center; margin-bottom:1.5rem;">Comparativa Técnica</h2>
+            <h2 style="text-align:center;">Comparativa Técnica</h2>
             <table class="comparison-table">
                 <thead>
-                    <tr>
-                        <th>Aspecto</th>
-                        <th style="color:var(--color-lpc)">LPC</th>
-                        <th style="color:var(--color-relp)">RELP</th>
-                        <th style="color:var(--color-celp)">CELP</th>
-                    </tr>
+                    <tr><th>Aspecto</th><th style="color:var(--color-lpc)">LPC</th><th style="color:var(--color-relp)">RELP</th><th style="color:var(--color-celp)">CELP</th></tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>Calidad de Voz</strong></td>
-                        <td>Baja (Robótica)</td>
-                        <td>Media</td>
-                        <td>Alta (Natural)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Tasa de Bits</strong></td>
-                        <td>Muy Baja (2.4 kbps)</td>
-                        <td>Media (9.6 kbps)</td>
-                        <td>Variable (4-16 kbps)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Complejidad CPU</strong></td>
-                        <td>Baja (Fácil)</td>
-                        <td>Media</td>
-                        <td>Alta (Intensiva)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Latencia</strong></td>
-                        <td>Alta (35ms)</td>
-                        <td>Media (25ms)</td>
-                        <td>Baja (20ms)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Uso Principal</strong></td>
-                        <td>Militar / Seguridad</td>
-                        <td>Satélites Antiguos</td>
-                        <td>VoIP / Móviles (4G/5G)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Ventaja Clave</strong></td>
-                        <td>Mínimo ancho banda</td>
-                        <td>Mejor tono que LPC</td>
-                        <td>Calidad casi perfecta</td>
-                    </tr>
+                    <tr><td><strong>Principio</strong></td><td>Modelo Source-Filter</td><td>Residuo Parcial</td><td>Codebooks</td></tr>
+                    <tr><td><strong>Calidad (MOS)</strong></td><td>Baja (~2.0)</td><td>Media (~3.5)</td><td>Alta (~4.2)</td></tr>
+                    <tr><td><strong>Tasa de Bits</strong></td><td>2.4 kbps</td><td>9.6 kbps</td><td>12.2 kbps</td></tr>
+                    <tr><td><strong>Complejidad</strong></td><td>Baja</td><td>Media</td><td>Alta</td></tr>
+                    <tr><td><strong>Uso Actual</strong></td><td>Satélite Antiguo</td><td>Radio Digital</td><td>VoIP / 4G/5G</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL JUEGO -->
+    <!-- MODAL JUEGO (Trivia Mejorada) -->
     <div id="modal-game" class="modal-overlay">
         <div class="modal-content game-area">
             <button class="close-btn" onclick="closeAllModals()">&times;</button>
-            <h2>🎮 Desafío Rápido</h2>
-            <div class="game-score">Puntos: <span id="scoreVal">0</span></div>
+            <h2>🎮 Trivia de Telecomunicaciones</h2>
+            <div class="game-score">Puntuación: <span id="scoreVal">0</span> / 50</div>
             
-            <div class="game-scenario" id="gameScenario">
-                Cargando escenario...
+            <div class="game-scenario" id="gameQuestion">
+                Cargando pregunta...
             </div>
             
-            <div class="game-options">
-                <div class="game-card pos-tl" id="card-lpc" onclick="checkAnswer('lpc')">
-                    <svg viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" /></svg>
-                    <h3>LPC</h3>
-                </div>
-                <div class="game-card pos-tr" id="card-celp" onclick="checkAnswer('celp')">
-                    <svg viewBox="0 0 24 24"><path d="M17,1.01L7,1C5.9,1 5,1.9 5,3V21C5,22.1 5.9,23 7,23H17C18.1,23 19,22.1 19,21V3C19,1.9 18.1,1.01 17,1.01M17,19H7V5H17V19M16,13H8V15H16V13Z" /></svg>
-                    <h3>CELP</h3>
-                </div>
-                <div class="game-card pos-bc" id="card-relp" onclick="checkAnswer('relp')">
-                    <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg>
-                    <h3>RELP</h3>
-                </div>
+            <div class="game-options" id="gameOptions">
+                <!-- Las opciones se generan con JS -->
             </div>
 
             <div class="game-feedback" id="gameFeedback"></div>
         </div>
     </div>
 
-    <!-- Script al final para asegurar carga correcta -->
     <script src="script.js"></script>
 </body>
 </html>
